@@ -1,46 +1,82 @@
-import streamlit as st
-import pandas as pd
-import pickle
+# Importing modules
+from tkinter import *
+import pyttsx3
+from nltk.corpus import wordnet
+import nltk
 
-# Load trained model
-model=pickle.load(open(r'C:\Spyder Practice\multiple_linear_regression\multiple_linear_regression_model.pkl', "rb"))
+# Download WordNet data if not already downloaded
+nltk.download('wordnet')
+
+# Function to speak the audio
+def speak(audio):
+    # Initialize pyttsx3 engine
+    engine = pyttsx3.init('sapi5')
+
+    # Set the voice property to the default
+    voices = engine.getProperty('voices')
+    engine.setProperty('voice', voices[0].id)
     
+    # Speak the given audio text
+    engine.say(audio)
+    engine.runAndWait()
 
+# Function to find synonyms using NLTK's WordNet
+def find_synonyms(word):
+    syn_words = set()
+    for syn in wordnet.synsets(word):
+        for lemma in syn.lemmas():
+            syn_words.add(lemma.name())
+    return list(syn_words)
 
-st.title("💹 Investment Profit Prediction App")
-st.write("Enter the details below to predict the **Profit**")
+# Function to get the meaning of a word using NLTK's WordNet
+def meaning():
+    # Taking the string input
+    query = str(text.get())
+    synsets = wordnet.synsets(query)
+    res = ''
+    
+    if synsets:
+        # Fetch the definition of the first meaning
+        for syn in synsets:
+            res += f"{syn.definition()}\n"
+        
+        # Set and speak the output
+        spokenText.set(res)
+        speak("The meaning is: " + res)
+    else:
+        res = "Meaning not found"
+        spokenText.set(res)
+        speak(res)
 
-# --- User Inputs ---
-digital_marketing = st.number_input("💻 Digital Marketing Spend", min_value=0.0, value=100000.0, step=1000.0)
-promotion = st.number_input("📢 Promotion Spend", min_value=0.0, value=50000.0, step=1000.0)
-research = st.number_input("🔬 Research Spend", min_value=0.0, value=150000.0, step=1000.0)
-state = st.selectbox("🌍 State", ["Hyderabad", "Bangalore", "Chennai"])
+# Creating the window 
+wn = Tk() 
+wn.title("Pradeep's Dictionary")
+wn.geometry('700x500')
+wn.config(bg='SlateGray1')
 
-# --- One-hot encode the 'State' like during training ---
-# --- One-hot encode the 'State' like during training ---
-state_dummies = pd.get_dummies([state], dtype=int)
-state_dummies = state_dummies.rename(columns={
-    "Bangalore": "State_Bangalore",
-    "Chennai": "State_Chennai",
-    "Hyderabad": "State_Hyderabad"
-})
+# Creating the variables to get the word and set the correct word
+text = StringVar(wn)
+spokenText = StringVar(wn)
 
-# Ensure all state columns exist (even if 0)
-for col in ["State_Bangalore", "State_Chennai", "State_Hyderabad"]:
-    if col not in state_dummies:
-        state_dummies[col] = 0
+# The main label
+Label(wn, text="Pradeep - Speak the Meaning", bg='SlateGray1',
+      fg='gray30', font=('Times', 20, 'bold')).place(x=100, y=10)
 
-# Combine into a single DataFrame
-input_data = pd.DataFrame({
-    "DigitalMarketing": [digital_marketing],
-    "Promotion": [promotion],
-    "Research": [research]
-})
+# Getting the input of word from the user
+Label(wn, text='Please enter the word', bg='SlateGray1', font=('calibre', 13, 'normal'),
+      anchor="e", justify=LEFT).place(x=20, y=70)
 
-input_data = pd.concat([input_data, state_dummies[["State_Bangalore","State_Chennai","State_Hyderabad"]]], axis=1)
+Entry(wn, textvariable=text, width=35, font=('calibre', 13, 'normal')).place(x=20, y=110)
 
+# Label to show the correct word
+queryLabel = Label(wn, textvariable=spokenText, bg='SlateGray1', anchor="e",
+                   font=('calibre', 13, 'normal'), justify=LEFT, wraplength=500).place(x=20, y=130)
+spokenText.set("Which word do you want to find the meaning of, sir/madam?")
+speak("Which word do you want to find the meaning of, sir or madam")
 
-# --- Prediction ---
-if st.button("Predict Profit"):
-    prediction = model.predict(input_data)
-    st.success(f"💰 Predicted Profit: {prediction[0]:,.2f}")
+# Button to get the meaning
+Button(wn, text="Speak Meaning", bg='SlateGray4', font=('calibre', 13),
+       command=meaning).place(x=230, y=350)
+
+# Runs the window till it is closed by the user
+wn.mainloop()
