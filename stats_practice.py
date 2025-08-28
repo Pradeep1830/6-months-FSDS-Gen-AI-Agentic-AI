@@ -71,13 +71,10 @@ print(y_test.values[:5])  # float 5. means 5.0
 print(y_predictions[:5])
 
 from sklearn.metrics import r2_score,mean_squared_error
-
 R2=r2_score(y_test,y_predictions)
 MSE=mean_squared_error(y_test,y_predictions)
-#MSE**(1/2)
 RMSE=np.sqrt(MSE)
-#accuracy_score(y_test,y_predictions) # it is a regression tech
-print("R-sqaure:",R2)
+print("R-square",R2)
 print("MSE:",MSE)
 print("RMSE:",RMSE)
 
@@ -102,30 +99,36 @@ dir(vt)
 vt.variances_
 vt.get_support()
 
- vt.get_params()
+ 
+vt.get_params()
 
 vt.threshold
 
 cols=vt.get_feature_names_out()
- df[cols]
+df[cols]
  
- df.head()
- from sklearn.feature_selection import VarianceThreshold
- vt=VarianceThreshold(threshold=0)
+df.head()
+from sklearn.feature_selection import VarianceThreshold
+vt=VarianceThreshold(threshold=0)
  ### Make sure before fitting the dataframe , do not include output column
- X=df.drop('YearsExperience',axis=1) 
+X=df.drop('YearsExperience',axis=1) 
 # X it self a data frame
- vt.fit(X)
- vt.variances_
- vt.get_support()
- cols=vt.get_feature_names_out()
- X[cols]
+vt.fit(X)
+vt.variances_
+vt.get_support()
+cols=vt.get_feature_names_out()
+x[cols]
  
  
- from statsmodels.api import OLS
- OLS(y_train,x_train).fit().summary()
+from statsmodels.api import OLS
+OLS(y_train,x_train).fit().summary()
 
+import pickle
+pickle.dump(LR,
+ open('YearsExperience_model.pkl','wb'))
 
+model=pickle.load(open('YearsExperience_model.pkl','rb'))
+model
 
 
 
